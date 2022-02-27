@@ -63,7 +63,17 @@ function checksTodoExists(request, response, next) {
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+
+  const { id } = request.params;
+
+  const user = users.find(user => user.id == id);
+
+  if (user) {
+    request.user = user;
+    next();
+  } else {
+    return response.status(404);
+  }
 }
 
 app.post('/users', (request, response) => {
