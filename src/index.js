@@ -1,6 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-
 const { v4: uuidv4, validate } = require('uuid');
 
 const app = express();
@@ -10,7 +9,16 @@ app.use(cors());
 const users = [];
 
 function checksExistsUserAccount(request, response, next) {
-  // Complete aqui
+  
+  const { username } = request.headers;
+  
+  if (!users.some(user => user.username == username)) {
+    return response.status(404)
+  }
+  
+  request.user = users.find(user => user.username == username);
+  
+  return next();
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
