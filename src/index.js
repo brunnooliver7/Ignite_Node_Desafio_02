@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { v4: uuidv4, validate } = require('uuid');
+const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 app.use(express.json());
@@ -13,7 +13,7 @@ function checksExistsUserAccount(request, response, next) {
   const { username } = request.headers;
 
   if (!users.some(user => user.username == username)) {
-    return response.status(404)
+    return response.status(404).json({ error: 'User does not exist' })
   }
 
   request.user = users.find(user => user.username == username);
@@ -28,7 +28,7 @@ function checksCreateTodosUserAvailability(request, response, next) {
   if ((!user.pro && user.todos.length < 10) || user.pro) {
     return next();
   } else {
-    return response.status(403)
+    return response.status(403).json('Not allowed')
   }
 }
 
@@ -40,17 +40,22 @@ function checksTodoExists(request, response, next) {
   const user = users.find(user => user.username == username)
 
   if (!user) {
-    return response.status(404).json({ error: 'erro' })
+    return response.status(404).json({ error: 'User does not exist' })
   }
 
   const regexRule = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   const isUUID = regexRule.test(id);
 
   if (!isUUID) {
-    return response.status(400).json({ error: 'erro' }) 
+    return response.status(400)
   }
 
   const todo = user.todos.find(todo => todo.id == id);
+
+  if (!todo) {
+    return response.status(404).json({ error: 'To Do does not exist' })
+  }
+
   const todoBelongsToThisUser = user.todos.some(todo => todo.id == id);
 
   if (user && isUUID && todoBelongsToThisUser) {
@@ -72,7 +77,7 @@ function findUserById(request, response, next) {
     request.user = user;
     next();
   } else {
-    return response.status(404);
+    return response.status(404).json({ error: 'User does not exist' });
   }
 }
 
